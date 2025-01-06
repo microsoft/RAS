@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html>
+<meta property='og:title' content='Region-Adaptive Sampling for Diffusion Transformers'/>
+<meta property='og:description' content='Region-Adaptive Sampling for Diffusion Transformers'/>
+<meta property='og:url' content='https://maruyamaaya.github.io/RAS/'/>
+<meta property='og:image:width' content='1200' />
+<meta property='og:image:height' content='663' />
+<!-- TYPE BELOW IS PROBABLY: 'website' or 'article' or look on https://ogp.me/#types -->
+<meta property="og:type" content='website'/>
+<head>
+  <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-4B4FWKWSVM"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-4B4FWKWSVM');
+</script>
+  <meta charset="utf-8">
+  <meta name="description"
+        content="Region-Adaptive Sampling for Diffusion Transformers">
+  <meta name="keywords" content="Region-Adaptive Sampling for Diffusion Transformers">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Region-Adaptive Sampling for Diffusion Transformers</title>
+
+  <link rel="stylesheet" href="./static/css/bulma.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="./static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="./static/css/tab_gallery.css">
+  <link rel="stylesheet" href="./static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="./static/css/index.css">
+  <link rel="icon" href="./static/images/favicon.svg">
+  <link rel="stylesheet" href="juxtapose/css/juxtapose.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script defer src="./static/js/fontawesome.all.min.js"></script>
+  <script src="./static/js/bulma-carousel.min.js"></script>
+  <script src="./static/js/bulma-slider.min.js"></script>
+  <script src="./static/js/index.js"></script>
+  <script src="./static/js/magnifier.js"></script>
+  <link href="https://fonts.cdnfonts.com/css/menlo" rel="stylesheet">
+  <link rel="stylesheet" href="./static/css/image_card_fader.css">
+  <link rel="stylesheet" href="./static/css/image_card_slider.css">
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Patrick+Hand|Google+Sans|Noto+Sans|Castoro|Lato|Open+Sans&effect=shadow-multiple|emboss|3d"> 
+  <link rel="icon" href="./static/images/pyramid.png" type="image/x-icon">
+  <link rel="shortcut icon" href="./static/images/pyramid.png" type="image/x-icon">
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+
+
+
+<style>
+  @import url('https://fonts.cdnfonts.com/css/menlo');
+
+  .video-table td, .video-table th {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 4px;
+    padding-right: 4px;
+    font-weight: normal;
+  }
+  .first-col {
+    width: 7%;
+    vertical-align: middle;
+  }
+  .other-col {
+    width: 31%;
+  }
+  body {
+    font-family: "Lato", sans-serif;
+    font-size: 1.1em;
+  }
+  .title.is-3 {
+    font-weight: 900;
+    font-size: 2.0rem;
+  }
+  .title.is-4 {
+    font-weight: 700;
+    font-size: 1.7rem;
+  }
+  .custom-emoji {
+    width: 1.2em;
+    height: 1em;
+    display: inline-block;
+    background-image: url('./static/images/logo_single.png');
+    background-size: cover;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+</style>
+
+
+<body>
+  <section class="hero is-small">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column has-text-centered">
+          <br><br>
+          <h1 class="title is-2 publication-title" style="font-size: 2.12rem">
+            <span style="color: #39c7c3;">R</span>egion-<span style="color: #7f51cf;">A</span>daptive <span style="color: #7f51cf;">S</span>ampling for Diffusion Transformers
+          </h1>
+        
+          <div class="is-size-5 publication-authors">
+            <span class="author-block">
+              <a href="https://maruyamaaya.github.io/" target="_blank">Ziming Liu</a><sup>1</sup>,&nbsp;</span>
+            <span class="author-block">
+              <a href="https://www.microsoft.com/en-us/research/people/yifanyang/" target="_blank">Yifan Yang</a><sup>2</sup>,&nbsp;</span>
+            <span class="author-block">
+              <a href="https://www.microsoft.com/en-us/research/people/chengzhang/" target="_blank">Chengruidong Zhang</a><sup>2</sup>,&nbsp;</span>
+            <span class="author-block">
+              <a href="https://viscent.dev/" target="_blank">Yiqi Zhang</a><sup>1</sup>,&nbsp;</span>
+            <span class="author-block">
+              <a href="https://www.microsoft.com/en-us/research/people/liliqiu/" target="_blank">Lili Qiu</a><sup>2</sup>,&nbsp;</span>
+            <span class="author-block">
+              <a href="https://www.comp.nus.edu.sg/~youy/" target="_blank">Yang You</a><sup>1*</sup>,
+            </span>
+            <span class="author-block">
+              <a href="https://www.microsoft.com/en-us/research/people/yuqyang/" target="_blank">Yuqing Yang</a><sup>2*</sup>&nbsp;</span>
+            
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            <span class="author-block"><sup>1</sup>National University of Singapore,&nbsp;</span>
+            <span class="author-block"><sup>2</sup>Microsoft Research</span>
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            {liuziming, yiqi.zhang, youy}@comp.nus.edu.sg&nbsp;&nbsp;&nbsp;{yifanyang, chengzhang, liliqiu, yuqyang}@microsoft.com
+          </div>
+
+          <div class="is-size-5 publication-authors">
+            (* indicates corresponding authors)
+          </div>
+          <div class="is-size-5 publication-authors">
+            This work was done during Ziming Liu's internship at Microsoft Research. 
+          </div>
+          
+
+          <!-- <div class="is-size-5 publication-venue">
+            in XXX
+          </div> -->
+
+          <div class="column has-text-centered">
+            <div class="publication-links">
+              <!-- Code Link. -->
+              <span class="link-block">
+                <a href="https://github.com/MaruyamaAya/RAS" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fab fa-github"></i>
+                  </span>
+                  <span>Code</span>
+                  </a>
+              </span>
+              <!-- paper -->
+              <span class="link-block">
+                <a href="https://www.arxiv.org/abs/xxxx.xxxxx" class="external-link button is-normal is-rounded is-dark" target="_blank">
+                  <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                  </span>
+                  <span>Paper</span>
+                </a>
+              </span>
+              <!-- doc -->
+              <span class="link-block">
+                <a href="https://github.com/MaruyamaAya/RAS/blob/main/README.md#installation" target="_blank"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="fas fa-book"></i>
+                  </span>
+                  <span>Doc</span>
+                  </a>
+              </span>
+              <!-- twitter -->
+              <span class="link-block">
+                <a href="https://x.com/" target="_blank" class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="fab fa-twitter"></i>
+                  </span>
+                  <span>Twitter</span>
+                </a>
+              </span>
+              <!-- bibtex -->
+              <span class="link-block">
+                <a href="#bibtex"
+                   class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                      <i class="ai ai-obp"></i>
+                  </span>
+                  <span>BibTex</span>
+                </a>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="hero is-small">
+  <div class="hero-body">
+    <div class="container is-max-desktop">
+      <div class="content has-text-justified">
+        <p>
+          Towards efficienct Diffusion Transformers! We introduce <span class="custom-emoji"></span> <b><span style="color: #39c7c3;">R</span>egion-<span style="color: #7f51cf;">A</span>daptive <span style="color: #7f51cf;">S</span>ampling</b>, the first diffusion sampling strategy that allows for regional variability in sampling ratios. Compared to spatially uniform samplers, this flexibility enables our approach to allocate DiT's processing power to the model's current areas of interest, significantly improving generation quality within the same inference budget. With models like Lumina-Next-T2I and Stable Diffusion 3,<span class="custom-emoji"></span> <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b>'s fast-region noise updating yields <b>over 2x</b> the acceleration with negligible image quality loss. A user study comparing our method to uniform sampling across various generated cases further shows that our method maintains comparable generation quality at <b>1.6x</b> the acceleration rate.
+          <br>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="container is-max-desktop">
+    <video class="video" autoplay controls muted loop playsinline>
+      <source src="./static/videos/RAS_1080.mp4" type="video/mp4">
+    </video>
+    <div class="columns is-centered">
+      <div class="content has-text-centered">
+        <span style="font-size: 0.8em; width: 80%; display: inline-block;"><br>Video 1: Comparison of Stable Diffusion 3 image generation speeds with and without RAS.</span>
+        <br>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Region-Adaptive Sampling</h2>
+        
+        <h2 class="title is-4">Motivation</h2>
+        <div class="content has-text-justified">
+          <p>
+            Diffusion models (DMs) have proven to be highly effective probabilistic generative models, producing high-quality data across various domains. However, generating samples with DMs involves solving a generative Stochastic or Ordinary Differential Equation (SDE/ODE) in reverse time, which requires multiple sequential forward passes through a large neural network. This sequential processing limits their real-time applicability.
+          </p>
+          <p>
+            Unlike U-Net-based models, DiTs allow <b>any number of tokens</b> to be processed flexibly, opening up new possibilities. This shift has inspired us to design a new sampling approach capable of assigning different sampling steps to different regions within an image. Specifically, we observed two key phenomena: <b>(1)</b> the regions of focus in adjacent steps exhibit considerable <b>continuity</b> during the later stages of diffusion, and <b>(2)</b> in each sampling step, the model tends to focus on specific <b>semantically meaningful areas</b> within the image.
+          </p>
+          <div class="content has-text-centered">
+            <img src="./static/images/similarity.png" style="width: 90%;"><br>
+            <span style="font-size: 0.8em; width: 75%; display: inline-block;">Figure 1: Visualization of predicted noise of each step. DiT model focuses on certain regions during each step and the change in focus is
+              continuous across steps.</span>
+          </div>
+        </div>
+
+        <h2 class="title is-4">Implementation</h2>
+        <div class="content has-text-justified">
+          <p>
+            
+          </p>
+          <div class="content has-text-centered">
+            <img src="./static/images/method.png"><br>
+            <span style="font-size: 0.8em; width: 75%; display: inline-block;">Figure 2: Overview of RAS design. Only current fast-update regions of each step are passed to the model. And only two extra functions are needed to switch from the original scheduler to RAS.</span>
+          </div>
+          <div class="content has-text-justified">
+            Built on these insights, <b><span style="color: #39c7c3;">R</span>egion-<span style="color: #7f51cf;">A</span>daptive <span style="color: #7f51cf;">S</span>ampling</b> is proposed to allow only the regions that the model is focusing on (fast update regions) to proceed through DiT for denoising. Conversely, for regions of less interest (slow-update regions), we reuse the previous step's noise output directly. This approach enables regional variability in sampling steps: areas of interest are updated with higher ratio, while others retain the previous noise output, thus reducing computation. The regions at each step are selected according to the output noise from the previous step, leveraging the inter-step continuity.
+          </div>
+          <div class="content has-text-justified">
+          We also introduced techniques like starvation prevention, dynamic sampling ratio, accumulated error resetting, key & value recovery, and kernel fusing to further improve the performance of our method. Please refer to our paper for more details.
+          </div>
+          <div class="content has-text-centered">
+            <img src="./static/images/dropcnt.png" style="width: 90%;"><br>
+            <span style="font-size: 0.8em; width: 75%; display: inline-block;">Figure 3: Visualization of the number of active sampling steps for the regions with RAS. Fast-update regions have more active steps than slow-update regions.</span>
+              
+          </div>
+        </div>
+
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Evaluations</h2>
+        <div class="content has-text-centered">
+          <img src="./static/images/showcase.png">
+          <span style="font-size: 0.8em; width: 75%; display: inline-block;">Figure 4: (a)(b) Accelerating Lumina-Next-T2I and Stable Diffusion 3, with 30 and 28 steps separately. (c)(d) Multiple configurations of RAS outperform rectified flow in both image qualities and text-following. RAS-X stands for RAS with X sampling steps in total. (e) RAS achieves comparable human-evaluation results with the default model configuration while achieving around 1.6x speedup.
+            </span>
+        </div>
+        <h2 class="title is-4">Qualitative Results</h2>
+        
+        <div class="content has-text-justified">
+          <p>
+            To further evaluate the qualitative performance of <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b>, we conducted a human evaluation. We randomly selected 14 prompts from the official research papers and blogs of Stable Diffusion 3 and Lumina, generating two images for each prompt: one using dense inference and the other using <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b>, both with the same random seed and default number of timesteps. As shown in Figure 4 (e), 633 out of 1400 votes (45.21%) indicated that the two images were of similar quality. Additionally, 28.29% of votes favored the dense image over the <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b> result, while 26.50% preferred <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b> over the dense result. These results demonstrate that <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b> achieves a significant improvement in throughput (1.625× for Stable Diffusion 3 and 1.561× for Lumina-Next-T2I) without noticeably affecting human preference.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <br>
+
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">        
+        <div class="content has-text-justified">
+          <h2 class="title is-4">Quantitive Results</h2>
+          <div class="content has-text-centered">
+            <img src="./static/images/exp_table.png" style="width: 95%;"><br>
+            <span style="font-size: 0.8em; width: 75%; display: inline-block;">Table 1: RAS provides Pareto improvements in throughput and image quality compared to rectified flow.
+            </span>
+          </div>
+          
+          <p>
+            As is shown in figure 4 (c)(d), <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b> consistently <b>pushes the efficiency frontier</b> for rectified-flow-based diffusion, significantly reducing inference time for each timestep while maintaining competitive image quality.  Compared to merely lowering the total number of timesteps, <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b> yields slower quality degradation, especially when timesteps fall below 10. Moreover, in side-by-side comparisons on Stable Diffusion 3 and Lumina-Next-T2I, <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b> frequently achieves a <b>Pareto improvement</b> in throughput and image quality: as is shown in Table 1, for a given speedup target, there almost always exists a <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b> configuration that offers better FID, sFID, or CLIP score than the dense-inference baseline. As a result, <b><span style="color: #39c7c3;">R</span><span style="color: #7f51cf;">A</span><span style="color: #7f51cf;">S</span></b> provides a broader parameter space to efficiently balance throughput, quality, and prompt compatibility for large-scale or latency-critical diffusion applications.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3">Acknowledgments</h2>
+        <div class="content has-text-justified">
+          <p>
+            The color scheme and icons used in this blog are a tribute to the unit “Raise A Suilen” from the BanG Dream! project.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+    <h2 class="title"><a id="bibtex">BibTeX</a></h2>
+    <pre><code>@misc{liu2024regionadaptivesampling,
+      title={Region-Adaptive Sampling for Diffusion Transformers}, 
+      author={Ziming Liu and Yifan Yang and Chengruidong Zhang and Yiqi Zhang and Lili Qiu and Yang You and Yuqing Yang},
+      year={2024},
+      eprint={xxxx.xxxxx},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/xxxx.xxxxx}, 
+}</code></pre>
+  </div>
+</section>
+
+
+<footer class="footer">
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <p>
+            This website is licensed under a <a rel="license"
+                                                href="http://creativecommons.org/licenses/by-sa/4.0/">Creative
+            Commons Attribution-ShareAlike 4.0 International License</a>.
+          </p>
+          <p>
+            Website adapted from the following <a href="https://nerfies.github.io">source code</a>.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<script src="juxtapose/js/juxtapose.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js"></script>    
+
+</body>
+</html>
