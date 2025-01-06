@@ -8,7 +8,7 @@
 
 **Authors**: [Ziming Liu](https://maruyamaaya.github.io/), [Yifan Yang](https://www.microsoft.com/en-us/research/people/yifanyang/), [Chengruidong Zhang](https://www.microsoft.com/en-us/research/people/chengzhang/), [Yiqi Zhang](https://viscent.dev/), [Lili Qiu](https://www.microsoft.com/en-us/research/people/liliqiu/), [Yang You](https://www.comp.nus.edu.sg/~youy/), [Yuqing Yang](https://www.microsoft.com/en-us/research/people/yuqyang/)
 
-<img src="https://github.com/MaruyamaAya/RAS/blob/main/docs/img/logo_single.png" width="20" height="16" style="vertical-align:middle; margin-right:5px;"> The RAS library is an open-source implementation of Regional-Adaptive Sampling (RAS), a novel diffusion model sampling strategy that introduces regional variability in sampling steps. Unlike conventional methods that uniformly process all image regions, RAS dynamically adjusts sampling ratios based on regional attention and noise metrics. This approach prioritizes computational resources for intricate regions while reusing previous outputs for less complex areas, achieving faster inference with minimal loss in image quality. Details can be found in our [research paper](arxiv.org/abs/xxxx.xxxxx).
+The RAS library is an open-source implementation of Regional-Adaptive Sampling (RAS), a novel diffusion model sampling strategy that introduces regional variability in sampling steps. Unlike conventional methods that uniformly process all image regions, RAS dynamically adjusts sampling ratios based on regional attention and noise metrics. This approach prioritizes computational resources for intricate regions while reusing previous outputs for less complex areas, achieving faster inference with minimal loss in image quality. Details can be found in our [research paper](arxiv.org/abs/xxxx.xxxxx).
 
 <p align="center">
     <br>
@@ -16,7 +16,7 @@
     <br>
 <p>
 
-<img src="https://github.com/MaruyamaAya/RAS/blob/main/docs/img/logo_single.png" width="20" height="16" style="vertical-align:middle; margin-right:5px;"> Key features of the RAS library include:
+Key features of the RAS library include:
 
 - Dynamic Regional Sampling: Efficiently allocate computational power to regions requiring finer details.
 - Training-Free Integration: Seamlessly integrate RAS with existing diffusion models like Stable Diffuion 3, Lumina-Next-T2I, and more.
@@ -32,7 +32,7 @@ Get started with RAS today to enhance your diffusion model's efficiency and unlo
 
 ## Installation
 
-It is recommended to install <img src="https://github.com/MaruyamaAya/RAS/blob/main/docs/img/logo_single.png" width="20" height="16" style="vertical-align:middle; margin-right:5px;"> RAS in a virtual environment. 
+It is recommended to install RAS in a virtual environment. 
 Notice that you need to install PyTorch according to your environment according to the [official documents](https://pytorch.org/).
 ```bash
 conda create -n ras python=3.12
@@ -47,7 +47,7 @@ python setup.py install
 
 ## Quickstart
 
-Implementing <img src="https://github.com/MaruyamaAya/RAS/blob/main/docs/img/logo_single.png" width="20" height="16" style="vertical-align:middle; margin-right:5px;"> RAS on [Diffusers](https://github.com/huggingface/diffusers) is easy. Here we provide two simple examples of RAS with the two models in our research paper. You can also modify the scripts for other usage.
+Implementing RAS on [Diffusers](https://github.com/huggingface/diffusers) is easy. Here we provide two simple examples of RAS with the two models in our research paper. You can also modify the scripts for other usage.
 
 **Stable Diffusion 3**
 
@@ -186,7 +186,3 @@ trademarks or logos is subject to and must follow
 Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
 Any use of third-party trademarks or logos are subject to those third-party's policies.
 
-
-## Acknowledgments
-
-The color scheme and icons used in this blog are a tribute to the unit “Raise A Suilen” from the BanG Dream! project.
