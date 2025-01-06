@@ -1,6 +1,6 @@
 <p align="center">
     <br>
-    <img src="https://github.com/MaruyamaAya/RAS/blob/main/docs/img/logo_ras.png" width="400"/>
+    <img src="https://github.com/microsoft/RAS/blob/main/docs/img/logo_ras.png" width="400"/>
     <br>
 <p>
 
@@ -12,7 +12,7 @@ The RAS library is an open-source implementation of Regional-Adaptive Sampling (
 
 <p align="center">
     <br>
-    <img src="https://github.com/MaruyamaAya/RAS/blob/main/docs/img/showcase.png" width="800"/>
+    <img src="https://github.com/microsoft/RAS/blob/main/docs/img/showcase.png" width="800"/>
     <br>
 <p>
 
@@ -26,7 +26,7 @@ Get started with RAS today to enhance your diffusion model's efficiency and unlo
 
 <p align="center">
     <br>
-    <img src="https://github.com/MaruyamaAya/RAS/blob/main/docs/img/drop_overview.png" width="600"/>
+    <img src="https://github.com/microsoft/RAS/blob/main/docs/img/drop_overview.png" width="600"/>
     <br>
 <p>
 
@@ -37,7 +37,7 @@ Notice that you need to install PyTorch according to your environment according 
 ```bash
 conda create -n ras python=3.12
 conda activate ras
-git clone https://github.com/MaruyamaAya/RAS.git
+git clone https://github.com/microsoft/RAS.git
 
 install PyTorch according to your environment
 
