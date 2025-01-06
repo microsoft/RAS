@@ -1,6 +1,6 @@
 <p align="center">
     <br>
-    <img src="https://github.com/microsoft/RAS/blob/main/docs/img/logo_ras.png" width="400"/>
+    <img src="https://github.com/microsoft/RAS/blob/main/docs/img/logo_ras.png" width="250"/>
     <br>
 <p>
 
