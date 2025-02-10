@@ -39,7 +39,8 @@ conda create -n ras python=3.12
 conda activate ras
 git clone https://github.com/microsoft/RAS.git
 
-install PyTorch according to your environment
+pip3 install torch torchvision torchaudio
+# or install other versions of PyTorch according to your environment
 
 cd RAS
 python setup.py install
