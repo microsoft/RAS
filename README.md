@@ -43,6 +43,7 @@ install PyTorch according to your environment
 
 cd RAS
 python setup.py install
+pip install flash-attn --no-build-isolation
 ```
 
 ## Quickstart
