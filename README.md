@@ -8,7 +8,7 @@
 
 **Authors**: [Ziming Liu](https://maruyamaaya.github.io/), [Yifan Yang](https://www.microsoft.com/en-us/research/people/yifanyang/), [Chengruidong Zhang](https://www.microsoft.com/en-us/research/people/chengzhang/), [Yiqi Zhang](https://viscent.dev/), [Lili Qiu](https://www.microsoft.com/en-us/research/people/liliqiu/), [Yang You](https://www.comp.nus.edu.sg/~youy/), [Yuqing Yang](https://www.microsoft.com/en-us/research/people/yuqyang/)
 
-The RAS library is an open-source implementation of Regional-Adaptive Sampling (RAS), a novel diffusion model sampling strategy that introduces regional variability in sampling steps. Unlike conventional methods that uniformly process all image regions, RAS dynamically adjusts sampling ratios based on regional attention and noise metrics. This approach prioritizes computational resources for intricate regions while reusing previous outputs for less complex areas, achieving faster inference with minimal loss in image quality. Details can be found in our [research paper](arxiv.org/abs/xxxx.xxxxx).
+The RAS library is an open-source implementation of Regional-Adaptive Sampling (RAS), a novel diffusion model sampling strategy that introduces regional variability in sampling steps. Unlike conventional methods that uniformly process all image regions, RAS dynamically adjusts sampling ratios based on regional attention and noise metrics. This approach prioritizes computational resources for intricate regions while reusing previous outputs for less complex areas, achieving faster inference with minimal loss in image quality. Details can be found in our [research paper](arxiv.org/abs/xxxx.xxxxx) and [blog](microsoft.github.io/RAS/).
 
 <p align="center">
     <br>
