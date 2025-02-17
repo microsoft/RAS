@@ -154,14 +154,14 @@ bash Lumina_Next_T2I_example.sh
 ## Citation
 
 ```bibtex
-@misc{liu2024regionadaptivesampling,
+@misc{liu2025regionadaptivesamplingdiffusiontransformers,
       title={Region-Adaptive Sampling for Diffusion Transformers}, 
       author={Ziming Liu and Yifan Yang and Chengruidong Zhang and Yiqi Zhang and Lili Qiu and Yang You and Yuqing Yang},
-      year={2024},
-      eprint={xxxx.xxxxx},
+      year={2025},
+      eprint={2502.10389},
       archivePrefix={arXiv},
       primaryClass={cs.CV},
-      url={https://arxiv.org/abs/xxxx.xxxxx}, 
+      url={https://arxiv.org/abs/2502.10389}, 
 }
 ```
 
