@@ -38,14 +38,14 @@ class ras_manager:
         self.skip_num_step = args.skip_num_step
         self.skip_num_step_length = args.skip_num_step_length
         self.height = args.height
-        self.weight = args.width
+        self.width = args.width
         self.high_ratio = args.high_ratio
         self.enable_index_fusion = args.enable_index_fusion
         self.generate_skip_token_list()
 
 
     def generate_skip_token_list(self):
-        avg_skip_token_num = int((1 - self.sample_ratio) * ((self.height // self.patch_size) // self.vae_size) * ((self.weight // self.patch_size) // self.vae_size))
+        avg_skip_token_num = int((1 - self.sample_ratio) * ((self.height // self.patch_size) // self.vae_size) * ((self.width // self.patch_size) // self.vae_size))
         if self.skip_num_step_length == 0: # static dropping
             self.skip_token_num_list = [avg_skip_token_num for i in range(self.num_steps)]
             for i in self.error_reset_steps:
