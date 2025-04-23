@@ -1,6 +1,7 @@
 class ras_manager:
     def __init__(self):
         self.patch_size = 2
+        self.temporal_patch_size = 1
         self.scheduler_start_step = 4
         self.scheduler_end_step = 30
         self.metric = "std"
@@ -9,12 +10,14 @@ class ras_manager:
         self.sample_ratio = 0.5
         self.starvation_scale = 0.1
         self.vae_size = 8
+        self.temporal_vae_size = 4
         self.high_ratio = 1
         self.num_steps = 30
         self.current_step = 0
         self.enable_index_fusion = False
         self.is_RAS_step = False
         self.is_next_RAS_step = False
+        self.is_video = False
 
         self.cached_index = None
         self.other_index = None
@@ -27,6 +30,8 @@ class ras_manager:
 
     def set_parameters(self, args):
         self.patch_size = args.patch_size
+        self.temporal_patch_size = args.temporal_patch_size
+        self.is_video = args.is_video
         # self.scheduler_pattern = args.scheduler_pattern
         self.scheduler_start_step = args.scheduler_start_step
         self.scheduler_end_step = args.scheduler_end_step
@@ -39,13 +44,18 @@ class ras_manager:
         self.skip_num_step_length = args.skip_num_step_length
         self.height = args.height
         self.width = args.width
+        self.num_frames = args.num_frames
         self.high_ratio = args.high_ratio
         self.enable_index_fusion = args.enable_index_fusion
         self.generate_skip_token_list()
 
 
     def generate_skip_token_list(self):
-        avg_skip_token_num = int((1 - self.sample_ratio) * ((self.height // self.patch_size) // self.vae_size) * ((self.width // self.patch_size) // self.vae_size))
+        if self.is_video:
+            latent_frames = ((self.num_frames - 1) // self.temporal_vae_size) + 1
+            avg_skip_token_num = int((1 - self.sample_ratio) * ((latent_frames // self.temporal_patch_size) * (self.height // self.patch_size) // self.vae_size) * ((self.width // self.patch_size) // self.vae_size))
+        else:
+            avg_skip_token_num = int((1 - self.sample_ratio) * ((self.height // self.patch_size) // self.vae_size) * ((self.width // self.patch_size) // self.vae_size))
         if self.skip_num_step_length == 0: # static dropping
             self.skip_token_num_list = [avg_skip_token_num for i in range(self.num_steps)]
             for i in self.error_reset_steps:

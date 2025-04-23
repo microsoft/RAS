@@ -2,3 +2,4 @@ from typing import TYPE_CHECKING
 
 from .ras_scheduling_flow_match_euler_discrete import RASFlowMatchEulerDiscreteScheduler
 from .ras_flux_flow_matching import RASFluxFlowMatchEulerDiscreteScheduler
+from .ras_wan_flow_matching import RASWanFlowMatchEulerDiscreteScheduler
