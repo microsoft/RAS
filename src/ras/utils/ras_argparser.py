@@ -22,4 +22,8 @@ def parse_args():
     parser.add_argument("--skip_num_step_length", type=int, default=0, help="The interval to change the skip token number")
     parser.add_argument("--enable_index_fusion", action="store_true", help="Enable index fusion for RAS")
 
+    parser.add_argument("--num_frames", type=int, default=81, help="Num frames for video generation models.")
+    parser.add_argument("--temporal_patch_size", type=int, default=1, help="temporal patch size")
+    parser.add_argument("--is_video", action="store_true", help="Whether current model is a video model")
+
     return parser.parse_args()

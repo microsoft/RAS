@@ -45,7 +45,7 @@ class RASFlowMatchEulerDiscreteSchedulerOutput(BaseOutput):
     prev_sample: torch.FloatTensor
 
 
-class RASFlowMatchEulerDiscreteScheduler(FlowMatchEulerDiscreteScheduler):
+class RASFluxFlowMatchEulerDiscreteScheduler(FlowMatchEulerDiscreteScheduler):
     """
     RAS Euler scheduler.
 
@@ -90,14 +90,8 @@ class RASFlowMatchEulerDiscreteScheduler(FlowMatchEulerDiscreteScheduler):
 
 
     def _init_ras_config(self, latents):
-        self.drop_cnt = torch.zeros((latents.shape[-2] // ras_manager.MANAGER.patch_size * latents.shape[-1] // ras_manager.MANAGER.patch_size), device=latents.device) - len(self.sigmas)
-
-    # def extract_latents_index_from_patched_latents_index(self, indices, height):
-    #     # # TODO add non-square case
-    #     # # TODO support PATCH_SIZE != 2
-    #     flattened_indices = indices // (height // ras_manager.MANAGER.patch_size) * ras_manager.MANAGER.patch_size * height + indices % (height // ras_manager.MANAGER.patch_size) *ras_manager.MANAGER.patch_size
-    #     flattened_indices = (flattened_indices[:, None] + torch.tensor([0, height + 1, 1, height], dtype=indices.dtype, device=indices.device)[None, :]).flatten()
-    #     return flattened_indices
+        #drop cnt stored at token level
+        self.drop_cnt = torch.zeros((latents.shape[1]), device=latents.device) - len(self.sigmas)
 
     def extract_latents_index_from_patched_latents_index(self, indices, height, width):
         """
@@ -134,30 +128,52 @@ class RASFlowMatchEulerDiscreteScheduler(FlowMatchEulerDiscreteScheduler):
         
         return flattened_indices
 
-    def ras_selection(self, sample, diff, height, width):
-        diff = diff.squeeze(0).permute(1, 2, 0)
-        # calculate the metric for each patch
+    def ras_selection(self, sample, diff):
+        """
+        Input diff is now of shape (B, H/p*W/p, C*p*p) instead of (B, C, H, W).
+        Metric calculation happens in (B, C, H, W) space, but indexing is in patch space.
+        For 1024x1024, VAE stride 8, p=2 (packing) -> (1, 64*64, 16*4).
+        Assumes B=1.
+        """
+        p = ras_manager.MANAGER.patch_size  # e.g., p=2
+        C = diff.shape[-1] // (p * p)  # Recover original C (e.g., 16 from 16*4)
+        H = ras_manager.MANAGER.height // ras_manager.MANAGER.vae_size
+        W = ras_manager.MANAGER.width // ras_manager.MANAGER.vae_size
+        assert diff.shape == (1, (H // p) * (W // p), C * p * p), f"{diff.shape} != {(1, (H // p) * (W // p), C * p * p)}"
+        
+        # Convert diff to (B, C, H, W) for metric calculation
+        diff_unpatched = diff.view(1, H // p, W // p, C, p, p)  # (1, H/p, W/p, C, p, p)
+        diff_unpatched = diff_unpatched.permute(0, 3, 1, 4, 2, 5)  # (1, C, H/p, p, W/p, p)
+        diff_unpatched = diff_unpatched.reshape(1, C, H, W)  # (1, C, H, W)
+    
+        # Calculate the metric for each patch
         if ras_manager.MANAGER.metric == "std":
-            metric = torch.std(diff, dim=-1).view(height // ras_manager.MANAGER.patch_size, ras_manager.MANAGER.patch_size, width // ras_manager.MANAGER.patch_size, ras_manager.MANAGER.patch_size).transpose(-2, -3).mean(-1).mean(-1).view(-1)
+            metric = torch.std(diff_unpatched, dim=1).view(H // p, p, W // p, p).transpose(1, 2).mean(-1).mean(-1).view(-1)
         elif ras_manager.MANAGER.metric == "l2norm":
-            metric = torch.norm(diff, p=2, dim=-1).view(height // ras_manager.MANAGER.patch_size, ras_manager.MANAGER.patch_size, width // ras_manager.MANAGER.patch_size, ras_manager.MANAGER.patch_size).transpose(-2, -3).mean(-1).mean(-1).view(-1)
+            metric = torch.norm(diff_unpatched, p=2, dim=1).view(H // p, p, W // p, p).transpose(1, 2).mean(-1).mean(-1).view(-1)
         else:
             raise ValueError("Unknown metric")
-
-        # scale the metric with the drop count to avoid starvation
+    
+        # Scale the metric with the drop count to avoid starvation
         metric *= torch.exp(ras_manager.MANAGER.starvation_scale * self.drop_cnt)
         current_skip_num = ras_manager.MANAGER.skip_token_num_list[self._step_index + 1]
         assert ras_manager.MANAGER.high_ratio >= 0 and ras_manager.MANAGER.high_ratio <= 1, "High ratio should be in the range of [0, 1]"
+        
+        # Select indices in patch space
         indices = torch.sort(metric, dim=0, descending=False).indices
         low_bar = int(current_skip_num * (1 - ras_manager.MANAGER.high_ratio))
         high_bar = int(current_skip_num * ras_manager.MANAGER.high_ratio)
         cached_patchified_indices = torch.cat([indices[:low_bar], indices[-high_bar:]])
         other_patchified_indices = indices[low_bar:-high_bar]
+        
+        # Update drop count
         self.drop_cnt[cached_patchified_indices] += 1
-        # latent_cached_indices = self.extract_latents_index_from_patched_latents_index(cached_patchified_indices, height)
-        latent_cached_indices = self.extract_latents_index_from_patched_latents_index(cached_patchified_indices, height, width)
-
-        return latent_cached_indices, other_patchified_indices
+        print(f"cached patchified indices {cached_patchified_indices}")
+        
+        # Convert patch indices to latent indices
+        # latent_cached_indices = self.extract_latents_index_from_patched_latents_index(cached_patchified_indices, H, W)
+    
+        return cached_patchified_indices, other_patchified_indices
 
 
     def step(
@@ -221,12 +237,13 @@ class RASFlowMatchEulerDiscreteScheduler(FlowMatchEulerDiscreteScheduler):
         if self._step_index == 0:
             ras_manager.MANAGER.reset_cache()
 
-        latent_dim, height, width = sample.shape[-3:]
+        ## B H/p * W/p C * p * p
+        batch, token_count, latent_dim = sample.shape
+        # latent_dim, height, width = sample.shape[-3:]s
 
         assert ras_manager.MANAGER.sample_ratio > 0.0 and ras_manager.MANAGER.sample_ratio <= 1.0
         if ras_manager.MANAGER.sample_ratio < 1.0 and ras_manager.MANAGER.is_RAS_step:
-            model_output.squeeze(0).view(latent_dim, -1)[:, ras_manager.MANAGER.cached_index] = ras_manager.MANAGER.cached_scaled_noise
-            model_output = model_output.transpose(0, 1).view(latent_dim, height, width).unsqueeze(0)
+            model_output[:, ras_manager.MANAGER.cached_index, :] = ras_manager.MANAGER.cached_scaled_noise
 
         # Upcast to avoid precision issues when computing prev_sample
         sample = sample.to(torch.float32)
@@ -235,15 +252,14 @@ class RASFlowMatchEulerDiscreteScheduler(FlowMatchEulerDiscreteScheduler):
         sigma_next = self.sigmas[self.step_index + 1]
 
         diff = (sigma_next - sigma) * model_output
-
         prev_sample = sample + diff
         # Cast sample back to model compatible dtype
         prev_sample = prev_sample.to(model_output.dtype)
 
         if ras_manager.MANAGER.sample_ratio < 1.0 and ras_manager.MANAGER.is_next_RAS_step:
-            latent_cached_indices, other_patchified_indices = self.ras_selection(sample, diff, height, width)
-            ras_manager.MANAGER.cached_scaled_noise = model_output.squeeze(0).view(latent_dim, -1)[:, latent_cached_indices]
-            ras_manager.MANAGER.cached_index = latent_cached_indices
+            cached_patchified_indices, other_patchified_indices = self.ras_selection(sample, diff)
+            ras_manager.MANAGER.cached_scaled_noise = model_output[:, cached_patchified_indices, :]
+            ras_manager.MANAGER.cached_index = cached_patchified_indices
             ras_manager.MANAGER.other_patchified_index = other_patchified_indices
 
         # upon completion increase step index by one
