@@ -4,7 +4,7 @@
     <br>
 <p>
 
-# Region-Adaptive Sampling for Diffusion Transformers
+# Region-Adaptive Sampling for Diffusion Transformers [CVPR 2026]
 
 **Authors**: [Ziming Liu](https://maruyamaaya.github.io/), [Yifan Yang](https://www.microsoft.com/en-us/research/people/yifanyang/), [Chengruidong Zhang](https://www.microsoft.com/en-us/research/people/chengzhang/), [Yiqi Zhang](https://viscent.dev/), [Lili Qiu](https://www.microsoft.com/en-us/research/people/liliqiu/), [Yang You](https://www.comp.nus.edu.sg/~youy/), [Yuqing Yang](https://www.microsoft.com/en-us/research/people/yuqyang/)
 
