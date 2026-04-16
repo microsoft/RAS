@@ -92,11 +92,46 @@ class RASFlowMatchEulerDiscreteScheduler(FlowMatchEulerDiscreteScheduler):
     def _init_ras_config(self, latents):
         self.drop_cnt = torch.zeros((latents.shape[-2] // ras_manager.MANAGER.patch_size * latents.shape[-1] // ras_manager.MANAGER.patch_size), device=latents.device) - len(self.sigmas)
 
-    def extract_latents_index_from_patched_latents_index(self, indices, height):
-        # # TODO add non-square case
-        # # TODO support PATCH_SIZE != 2
-        flattened_indices = indices // (height // ras_manager.MANAGER.patch_size) * ras_manager.MANAGER.patch_size * height + indices % (height // ras_manager.MANAGER.patch_size) *ras_manager.MANAGER.patch_size
-        flattened_indices = (flattened_indices[:, None] + torch.tensor([0, height + 1, 1, height], dtype=indices.dtype, device=indices.device)[None, :]).flatten()
+    # def extract_latents_index_from_patched_latents_index(self, indices, height):
+    #     # # TODO add non-square case
+    #     # # TODO support PATCH_SIZE != 2
+    #     flattened_indices = indices // (height // ras_manager.MANAGER.patch_size) * ras_manager.MANAGER.patch_size * height + indices % (height // ras_manager.MANAGER.patch_size) *ras_manager.MANAGER.patch_size
+    #     flattened_indices = (flattened_indices[:, None] + torch.tensor([0, height + 1, 1, height], dtype=indices.dtype, device=indices.device)[None, :]).flatten()
+    #     return flattened_indices
+
+    def extract_latents_index_from_patched_latents_index(self, indices, height, width):
+        """
+        Maps patch indices to latent indices in a row-major ordered grid for unequal H and W.
+        
+        Args:
+            indices (torch.Tensor): 1D tensor of patch indices from the flattened patch grid.
+            height (int): Height of the latent grid (H).
+            width (int): Width of the latent grid (W).
+        
+        Returns:
+            torch.Tensor: Flattened tensor of latent indices corresponding to all positions in the patches.
+        """
+        # Access patch size (assuming it's defined in a manager object)
+        ps = ras_manager.MANAGER.patch_size  # e.g., 2
+        
+        # Compute patch grid dimensions
+        ph = height // ps  # Number of patches along height
+        pw = width // ps   # Number of patches along width
+        
+        # Compute patch coordinates from indices (row-major order)
+        patch_y = indices // pw  # Patch row index
+        patch_x = indices % pw   # Patch column index
+        
+        # Compute base latent index for the top-left corner of each patch
+        base_index = (patch_y * ps) * width + (patch_x * ps)
+        
+        # Define offsets for the four corners in row-major order
+        offsets = torch.tensor([0, 1, width, width + 1], dtype=indices.dtype, device=indices.device)
+        
+        # Compute all latent indices by adding offsets to base index
+        # Shape: (num_indices, 4) -> flatten to (num_indices * 4)
+        flattened_indices = (base_index[:, None] + offsets[None, :]).flatten()
+        
         return flattened_indices
 
     def ras_selection(self, sample, diff, height, width):
@@ -119,7 +154,8 @@ class RASFlowMatchEulerDiscreteScheduler(FlowMatchEulerDiscreteScheduler):
         cached_patchified_indices = torch.cat([indices[:low_bar], indices[-high_bar:]])
         other_patchified_indices = indices[low_bar:-high_bar]
         self.drop_cnt[cached_patchified_indices] += 1
-        latent_cached_indices = self.extract_latents_index_from_patched_latents_index(cached_patchified_indices, height)
+        # latent_cached_indices = self.extract_latents_index_from_patched_latents_index(cached_patchified_indices, height)
+        latent_cached_indices = self.extract_latents_index_from_patched_latents_index(cached_patchified_indices, height, width)
 
         return latent_cached_indices, other_patchified_indices
 

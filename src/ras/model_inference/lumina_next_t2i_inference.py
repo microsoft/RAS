@@ -1,5 +1,9 @@
 import argparse
 import torch
+import sys
+
+sys.path.append('/workspace/RAS')
+sys.path.append('/workspace/RAS/src')
 from diffusers import LuminaText2ImgPipeline
 from ras.utils.lumina_next_t2i.update_pipeline_lumina import update_lumina_pipeline
 from ras.utils import ras_manager
